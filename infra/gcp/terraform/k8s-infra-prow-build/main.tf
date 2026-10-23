@@ -104,6 +104,40 @@ module "prow_build_nodepool_c4_standard_8_localssd" {
   ]
 }
 
+module "prow_build_nodepool_c4_highmem_8_localssd" {
+  source       = "../modules/gke-nodepool"
+  project_name = module.project.project_id
+  cluster_name = module.prow_build_cluster.cluster.name
+  location     = module.prow_build_cluster.cluster.location
+  node_locations = [
+    "us-central1-a",
+    "us-central1-b",
+    "us-central1-c",
+    "us-central1-f",
+  ]
+  name                         = "pool8-highmem"
+  initial_count                = 1
+  min_count                    = 1
+  max_count                    = 50 # total across all zones
+  machine_type                 = "c4-highmem-8-lssd"
+  disk_size_gb                 = 100
+  disk_type                    = "hyperdisk-balanced"
+  enable_nested_virtualization = true
+  service_account              = module.prow_build_cluster.cluster_node_sa.email
+  taints = [
+    {
+      key    = "highmem"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    },
+    {
+      key    = "spare"
+      value  = "true"
+      effect = "PREFER_NO_SCHEDULE"
+    }
+  ]
+}
+
 module "prow_build_nodepool_c4d_highmem_8_localssd" {
   source       = "../modules/gke-nodepool"
   project_name = module.project.project_id
